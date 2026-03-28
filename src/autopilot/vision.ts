@@ -136,9 +136,17 @@ A) HAND MANAGEMENT — What does my hand look like AFTER I play this card?
    - Do I have specials (1, 2, 8, 14, WHOT)? HOLD THEM for the right moment.
    - Will playing this card leave me with no options next turn? If so, pick a different card.
 
-B) WHEN TO HOLD vs WHEN TO PLAY specials:
+B) PICK TWO (2) STACKING — KILLER STRATEGY:
+   - There are only FIVE 2s in the whole deck (circle 2, triangle 2, cross 2, square 2, star 2).
+   - If you have 2-3 or more 2s, DO NOT play them early. HOARD THEM.
+   - Near the end of the game when you're close to checking up, UNLEASH them in a chain:
+     Play a 2 → opponent must draw 2 OR play their own 2 → but you hold most of the 2s so they probably CAN'T block → they draw 2 → you play another 2 → they draw 2 more → repeat.
+   - This buries the opponent in 4, 6, 8+ cards right when you're about to win.
+   - The more 2s you hold, the more devastating the chain. 3-4 twos = almost unblockable.
+   - If you only have one 2, still save it for defense (block opponent's Pick Two) or as a finisher.
+
+C) WHEN TO HOLD vs WHEN TO PLAY other specials:
    - Hold On(1): SAVE IT for when opponent has 1-2 cards (blocks their win). In 2-player = you play again.
-   - Pick Two(2): SAVE IT for defense (opponent plays a 2 on you) or to punish opponent when they're low on cards. Don't waste it early.
    - Suspension(8): SAVE IT for when you have a chain of plays ready. Play it when you can follow up with more cards.
    - General Market(14): SAVE IT for mid/late game when it hurts the opponent most. It gives you an extra turn too.
    - WHOT: SAVE IT as your escape card (when nothing matches) or finisher (when you're close to winning).
