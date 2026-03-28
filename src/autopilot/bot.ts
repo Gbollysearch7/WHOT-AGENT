@@ -1,4 +1,4 @@
-import { captureFullScreen, focusApp, clickAt, scrollDown, sleep, ensureTmpDir } from './screen.js';
+import { captureAppWindow, focusApp, clickInApp, clickAt, scrollDown, sleep, ensureTmpDir, WindowBounds } from './screen.js';
 import { analyzeScreenshot } from './analyzer.js';
 import { ScreenState, AnalysisResult } from './vision.js';
 import { GameLogger } from './logger.js';
@@ -43,6 +43,9 @@ export class WhotBot extends EventEmitter {
   private lastClickTime: number = 0;
   private logger: GameLogger;
   private inGame: boolean = false;
+  private windowBounds: WindowBounds | null = null;
+  private imageWidth: number = 1000;
+  private imageHeight: number = 780;
 
   constructor(config: Partial<BotConfig> = {}) {
     super();
@@ -118,15 +121,28 @@ export class WhotBot extends EventEmitter {
     this.frameCount++;
     const screenshotFile = `frame_${this.frameCount % 10}.png`;
 
-    // Step 1: Focus app and capture screen
+    // Step 1: Focus app and capture ONLY the app window
     try { focusApp(); } catch {}
     await sleep(200);
 
-    this.log(`Capturing screen (frame ${this.frameCount})...`);
+    this.log(`Capturing app window (frame ${this.frameCount})...`);
     let screenshotPath: string;
     try {
-      screenshotPath = captureFullScreen(screenshotFile);
+      const capture = captureAppWindow(screenshotFile);
+      screenshotPath = capture.path;
+      if (capture.bounds) {
+        this.windowBounds = capture.bounds;
+      }
       this.stats.lastScreenshot = screenshotPath;
+
+      // Get actual image dimensions after resize
+      try {
+        const dims = execSync(`sips -g pixelWidth -g pixelHeight "${screenshotPath}" 2>/dev/null`, { encoding: 'utf-8' });
+        const wMatch = dims.match(/pixelWidth:\s*(\d+)/);
+        const hMatch = dims.match(/pixelHeight:\s*(\d+)/);
+        if (wMatch) this.imageWidth = parseInt(wMatch[1]);
+        if (hMatch) this.imageHeight = parseInt(hMatch[1]);
+      } catch {}
     } catch (e: any) {
       this.log(`Screenshot failed: ${e.message}`);
       return;
@@ -139,8 +155,12 @@ export class WhotBot extends EventEmitter {
     if (fastAction) {
       this.log(`FAST-PATH: ${fastAction.reason}`);
       await sleep(200);
-      clickAt(fastAction.x, fastAction.y);
-      this.log(`Instant click at (${fastAction.x}, ${fastAction.y})`);
+      if (this.windowBounds) {
+        clickInApp(fastAction.x, fastAction.y, this.imageWidth, this.imageHeight, this.windowBounds);
+      } else {
+        clickAt(fastAction.x, fastAction.y);
+      }
+      this.log(`Instant click at img(${fastAction.x}, ${fastAction.y})`);
       this.previousState = fastAction.state;
       this.stats.currentState = fastAction.state;
       this.stats.lastAction = fastAction.reason;
@@ -175,7 +195,8 @@ export class WhotBot extends EventEmitter {
     }
 
     if (analysis.gameState) {
-      this.log(`Cards: [${analysis.gameState.myCards?.join(', ')}] | Top: ${analysis.gameState.topCard} | My turn: ${analysis.gameState.isMyTurn}`);
+      const cards = Array.isArray(analysis.gameState.myCards) ? analysis.gameState.myCards.join(', ') : String(analysis.gameState.myCards || '');
+      this.log(`Cards: [${cards}] | Top: ${analysis.gameState.topCard} | My turn: ${analysis.gameState.isMyTurn}`);
     }
 
     this.emit('analysis', analysis);
@@ -200,7 +221,30 @@ export class WhotBot extends EventEmitter {
       return; // Re-capture after scroll
     }
 
-    // Step 6: Execute action (click)
+    // Step 6: If model gave cardToPlay but no clickTarget, calculate click position
+    if (analysis.screen === 'game_playing' && analysis.cardToPlay !== null && analysis.cardToPlay !== undefined && !analysis.clickTarget) {
+      if (analysis.cardToPlay === -1) {
+        // Draw from market — market pile is center-right of the game table
+        // In the app-only image: roughly 60% across, 55% down
+        analysis.clickTarget = { x: Math.round(this.imageWidth * 0.60), y: Math.round(this.imageHeight * 0.55) };
+        this.log(`Calculated click: DRAW from market at img(${analysis.clickTarget.x}, ${analysis.clickTarget.y})`);
+      } else if (analysis.cardToPlay >= 0 && analysis.gameState?.myCards) {
+        // Calculate card position from index
+        // Now we capture only the app window (1000px wide)
+        // Cards are at the bottom ~88% of window height
+        // Cards spread across roughly 60-80% of the width, centered
+        const totalCards = Array.isArray(analysis.gameState.myCards) ? analysis.gameState.myCards.length : 5;
+        const cardWidth = Math.min(80, Math.round((this.imageWidth * 0.7) / totalCards));
+        const handWidth = totalCards * cardWidth;
+        const startX = (this.imageWidth - handWidth) / 2 + cardWidth / 2;
+        const cardX = startX + analysis.cardToPlay * cardWidth;
+        const cardY = Math.round(this.imageHeight * 0.88);
+        analysis.clickTarget = { x: Math.round(cardX), y: cardY };
+        this.log(`Calculated click: card index ${analysis.cardToPlay} at image(${analysis.clickTarget.x}, ${cardY})`);
+      }
+    }
+
+    // Step 7: Execute action (click)
     if (analysis.clickTarget) {
       // Rate limit clicks — don't click faster than every 2 seconds
       const now = Date.now();
@@ -253,24 +297,23 @@ export class WhotBot extends EventEmitter {
   private async executeClick(analysis: AnalysisResult): Promise<void> {
     if (!analysis.clickTarget) return;
 
-    // Claude sees a 1200px-wide image, but screen is Retina (3024px capture → 1512pt logical)
-    // Scale coordinates from image space (1200px) to logical screen space (1512pt)
-    const IMAGE_WIDTH = 1200;
-    const SCREEN_LOGICAL_WIDTH = 1512; // 3024 retina / 2
-    const scale = SCREEN_LOGICAL_WIDTH / IMAGE_WIDTH; // ~1.26
-
-    const rawX = analysis.clickTarget.x;
-    const rawY = analysis.clickTarget.y;
-    const x = Math.round(rawX * scale);
-    const y = Math.round(rawY * scale);
-
-    this.log(`Click: image(${rawX},${rawY}) → screen(${x},${y}) [scale ${scale.toFixed(2)}]`);
+    const imgX = analysis.clickTarget.x;
+    const imgY = analysis.clickTarget.y;
 
     // Small delay before clicking for reliability
     await sleep(this.config.clickDelayMs);
 
     try {
-      clickAt(x, y);
+      if (this.windowBounds) {
+        // Click relative to the app window — accurate!
+        this.log(`Click: img(${imgX},${imgY}) in ${this.imageWidth}x${this.imageHeight} window`);
+        clickInApp(imgX, imgY, this.imageWidth, this.imageHeight, this.windowBounds);
+      } else {
+        // Fallback: assume full screen
+        this.log(`Click: img(${imgX},${imgY}) — no window bounds, using fallback`);
+        const scale = 1512 / this.imageWidth;
+        clickAt(Math.round(imgX * scale), Math.round(imgY * scale));
+      }
       this.log('Click executed');
     } catch (e: any) {
       this.log(`Click failed: ${e.message}`);
@@ -292,12 +335,16 @@ export class WhotBot extends EventEmitter {
       // Sample pixel at center of where "YES, CONTINUE" button would be
       // In the 1200px image, the button is at approximately (600, 444) for game_confirm
       // and (600, 460) for join_confirm
-      // "YES, CONTINUE" dark red button is at y=500-520 in the 1200px image
-      // Also check the join_confirm dialog which has a similar button around y=510
+      // Now we capture ONLY the app window (1000px wide)
+      // The "YES, CONTINUE" dark red button is roughly at y=65-70% of the window height
+      const imgW = this.imageWidth;
+      const imgH = this.imageHeight;
+      const centerX = Math.round(imgW / 2);
       const checkPoints = [
-        { imgX: 600, imgY: 510, state: 'game_confirm' as ScreenState, label: 'Game confirm YES' },
-        { imgX: 600, imgY: 505, state: 'join_confirm' as ScreenState, label: 'Join lobby YES' },
-        { imgX: 600, imgY: 500, state: 'game_confirm' as ScreenState, label: 'Confirm YES (alt)' },
+        { imgX: centerX, imgY: Math.round(imgH * 0.66), state: 'game_confirm' as ScreenState, label: 'Confirm YES' },
+        { imgX: centerX, imgY: Math.round(imgH * 0.68), state: 'game_confirm' as ScreenState, label: 'Confirm YES (alt)' },
+        { imgX: centerX, imgY: Math.round(imgH * 0.70), state: 'join_confirm' as ScreenState, label: 'Join confirm YES' },
+        { imgX: centerX, imgY: Math.round(imgH * 0.72), state: 'join_confirm' as ScreenState, label: 'Join confirm YES (alt)' },
       ];
 
       for (const point of checkPoints) {
