@@ -1,0 +1,30 @@
+{
+  "totalGames": 1,
+  "wins": 1,
+  "losses": 0,
+  "winRate": 100,
+  "totalEarnings": 1000,
+  "totalTurns": 12,
+  "avgTurnsPerGame": 12,
+  "bestStreak": 1,
+  "currentStreak": 1,
+  "stakeBreakdown": {
+    "1000": {
+      "games": 1,
+      "wins": 1,
+      "losses": 0,
+      "earnings": 1000
+    }
+  },
+  "cardPlayFrequency": {},
+  "specialCardEffectiveness": {
+    "hold_on": {
+      "played": 9,
+      "ledToWin": 9
+    }
+  },
+  "suitCallFrequency": {},
+  "commonMistakes": [],
+  "learnedPatterns": [],
+  "lastUpdated": "2026-03-28T18:24:56.426Z"
+}

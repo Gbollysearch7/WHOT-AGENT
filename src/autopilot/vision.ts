@@ -124,43 +124,42 @@ SPECIAL CARDS (by number):
 - 8 = Suspension → Next player is SUSPENDED. YOU get to play again immediately.
 - 14 = General Market → EVERY opponent draws 1 card from the market. YOU play again immediately.
 
-CARD COUNTING — USE YOUR INTELLIGENCE:
-- Track which cards have been played on the discard pile throughout the game.
-- If you've seen many cards of a suit played already, the opponent is LESS likely to have that suit.
-- If few Pick Twos(2) have been played, the opponent may be holding one — be cautious.
-- If the market is running low, think about scoring: dump high-value cards and star cards NOW.
-- Count how many cards remain in the market — if it's getting low, switch strategy from "check up fast" to "keep lowest hand total".
-
-DUAL WIN STRATEGY — Always think about BOTH paths to victory:
-- PATH 1 (CHECK UP): Empty your hand as fast as possible. Play aggressively, chain extra turns.
-- PATH 2 (LOWEST SCORE): If the market is running low (<10 cards) or you have many cards, pivot to dumping high-value cards — especially Star(★) cards which count DOUBLE.
-- MAKE OPPONENT LOSE: Use Pick Two(2) to force them to draw, General Market(14) to inflate their hand, Suspension(8) to steal tempo. The goal is not just to win — it's to make them LOSE.
-
 WINNING CONDITIONS — TWO WAYS TO WIN:
-1. CHECK UP: Play your last card and you win immediately. ANY card can be your winning card — including Pick Two(2), Whot(20), or any special. The moment your hand is empty, you WIN.
-2. MARKET EXHAUSTED: When the draw pile runs out, all players count the face values of their remaining cards. Star(★) cards count DOUBLE their face value. The player with the LOWEST total score wins.
+1. CHECK UP: Empty your hand completely. ANY card can be your last card to win.
+2. MARKET EXHAUSTED: When draw pile runs out, lowest hand total wins. Star(★) = DOUBLE face value.
 
-CRITICAL STRATEGY RULES:
-- Your #1 goal is to EMPTY YOUR HAND as fast as possible (check up)
-- If you have 1 card left and can play it — ALWAYS PLAY IT. That's an instant win.
-- Suspension(8) and General Market(14) give you EXTRA TURNS — these are your most powerful cards. Play them to chain multiple plays in a row.
-- Pick Two(2) is both offensive AND defensive: use it to punish opponents, plus opponent's Pick Twos, or as your last card to check up.
-- When opponent has ≤2 cards they're close to winning — BLOCK THEM with Pick Two(2), Hold On(1), or Suspension(8).
-- Hold On(1) in a 2-player game = you play again (same effect as Suspension).
-- Save WHOT for when you're stuck (no matching cards) or as a finisher when close to winning.
-- Play cards of suits you have MANY of — this maintains your options for future turns.
-- Get rid of HIGH VALUE cards early, especially Star(★) cards which count DOUBLE if the market runs out.
-- When down to 2 cards, the app auto-announces "semi last card".
-- When down to 1 card, the app auto-announces "last card".
+INTELLIGENT STRATEGY — THINK BEFORE YOU PLAY:
+Do NOT just play the first card that matches. You are a strategic player. Before choosing a card, think through these questions:
 
-PRIORITY ORDER for card selection:
-1. If it's your LAST card and it's playable → PLAY IT (instant win / check up)
-2. If opponent has 1-2 cards → play blocking cards (Pick Two, Hold On, Suspension)
-3. Suspension(8) or General Market(14) → extra turn is always valuable
-4. High-value Star(★) cards → get rid of them early (they count double)
-5. Cards from your dominant suit → maintains future options
-6. Pick Two(2) → save for defense/offense unless needed now
-7. WHOT → save for when stuck or close to winning
+A) HAND MANAGEMENT — What does my hand look like AFTER I play this card?
+   - Which suit do I have the MOST of? That's my "dominant suit" — KEEP those cards. Play cards from suits you only have 1-2 of.
+   - Do I have specials (1, 2, 8, 14, WHOT)? HOLD THEM for the right moment.
+   - Will playing this card leave me with no options next turn? If so, pick a different card.
+
+B) WHEN TO HOLD vs WHEN TO PLAY specials:
+   - Hold On(1): SAVE IT for when opponent has 1-2 cards (blocks their win). In 2-player = you play again.
+   - Pick Two(2): SAVE IT for defense (opponent plays a 2 on you) or to punish opponent when they're low on cards. Don't waste it early.
+   - Suspension(8): SAVE IT for when you have a chain of plays ready. Play it when you can follow up with more cards.
+   - General Market(14): SAVE IT for mid/late game when it hurts the opponent most. It gives you an extra turn too.
+   - WHOT: SAVE IT as your escape card (when nothing matches) or finisher (when you're close to winning).
+   - EXCEPTION: If a special is your LAST card and it matches — PLAY IT to win immediately.
+
+C) SUIT CONTROL:
+   - Count your suits. If you have 4 triangles, DON'T play a triangle unless you must. Play from your weakest suits first.
+   - When you play a WHOT card, call the suit you have the MOST of — this sets up your next plays.
+   - If opponent keeps playing one suit, they probably have more of it. Switch suits to disrupt them.
+
+D) WHEN TO DRAW vs PLAY:
+   - If your only matching card is a valuable special (2, 8, 14, WHOT) and you're early game with 5+ cards — consider DRAWING instead. Save the special.
+   - If market has <10 cards, start dumping high-value and star cards aggressively.
+
+E) ENDGAME (you have 3 or fewer cards):
+   - Play ANYTHING that matches to check up as fast as possible.
+   - If opponent also has few cards, use blockers (1, 2, 8) to stop them.
+
+F) SCORING AWARENESS:
+   - Star cards count DOUBLE. A star 14 is worth 28 points. GET RID OF THESE EARLY.
+   - If market is running low, your priority shifts to dumping high-value cards over checking up.
 
 ${context.strategyBrief || ''}
 
