@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WHOT AGENT — AI Card Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- LOBBY SCREEN -->
+  <div id="lobby" class="screen active">
+    <div class="lobby-container">
+      <div class="logo-section">
+        <div class="logo-icon">
+          <span class="logo-card card-red">●</span>
+          <span class="logo-card card-green">▲</span>
+          <span class="logo-card card-blue">✚</span>
+          <span class="logo-card card-yellow">■</span>
+          <span class="logo-card card-purple">★</span>
+        </div>
+        <h1 class="logo-title">WHOT<span class="logo-accent">AGENT</span></h1>
+        <p class="logo-subtitle">AI-Powered Card Game</p>
+      </div>
+
+      <div class="lobby-form">
+        <div class="form-group">
+          <label for="playerName">Your Name</label>
+          <input type="text" id="playerName" placeholder="Enter your name" value="Player" maxlength="20">
+        </div>
+
+        <div class="form-group">
+          <label>AI Opponents</label>
+          <div class="btn-group">
+            <button class="btn-option active" data-ai="1">1 AI</button>
+            <button class="btn-option" data-ai="2">2 AI</button>
+            <button class="btn-option" data-ai="3">3 AI</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Difficulty</label>
+          <div class="btn-group">
+            <button class="btn-option" data-diff="easy">Easy</button>
+            <button class="btn-option" data-diff="medium">Medium</button>
+            <button class="btn-option active" data-diff="hard">Hard</button>
+          </div>
+        </div>
+
+        <button id="startBtn" class="btn-primary">
+          <span>Start Game</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game" class="screen">
+    <!-- Top bar -->
+    <div class="game-header">
+      <div class="game-info">
+        <span class="game-id-label">WHOT AGENT</span>
+        <span id="turnInfo" class="turn-info">Turn 1</span>
+      </div>
+      <div class="game-status">
+        <span id="statusText" class="status-text">Your turn</span>
+      </div>
+      <div class="draw-pile-count">
+        <span id="drawCount">0</span> cards in market
+      </div>
+    </div>
+
+    <!-- Opponents area -->
+    <div id="opponents" class="opponents-area"></div>
+
+    <!-- Center play area -->
+    <div class="play-area">
+      <div class="discard-section">
+        <div id="discardPile" class="discard-pile">
+          <div class="card-placeholder">?</div>
+        </div>
+        <div id="requiredSuit" class="required-suit hidden"></div>
+      </div>
+
+      <div id="drawPile" class="draw-pile" title="Draw from market">
+        <div class="draw-card-back">
+          <span>WHOT</span>
+        </div>
+        <div class="draw-label">MARKET</div>
+      </div>
+    </div>
+
+    <!-- Pick Two penalty banner -->
+    <div id="pickTwoBanner" class="pick-two-banner hidden">
+      <span>⚡ PICK TWO — <strong id="penaltyAmount">0</strong> cards pending!</span>
+    </div>
+
+    <!-- Suit selection modal -->
+    <div id="suitModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Choose a suit</h3>
+        <div class="suit-options">
+          <button class="suit-btn" data-suit="circle" style="--suit-color: #e74c3c">
+            <span class="suit-symbol">●</span>
+            <span>Circle</span>
+          </button>
+          <button class="suit-btn" data-suit="triangle" style="--suit-color: #2ecc71">
+            <span class="suit-symbol">▲</span>
+            <span>Triangle</span>
+          </button>
+          <button class="suit-btn" data-suit="cross" style="--suit-color: #3498db">
+            <span class="suit-symbol">✚</span>
+            <span>Cross</span>
+          </button>
+          <button class="suit-btn" data-suit="square" style="--suit-color: #f39c12">
+            <span class="suit-symbol">■</span>
+            <span>Square</span>
+          </button>
+          <button class="suit-btn" data-suit="star" style="--suit-color: #9b59b6">
+            <span class="suit-symbol">★</span>
+            <span>Star</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game over modal -->
+    <div id="gameOverModal" class="modal hidden">
+      <div class="modal-content game-over-content">
+        <div id="gameOverIcon" class="game-over-icon">🏆</div>
+        <h2 id="gameOverTitle">Game Over</h2>
+        <p id="gameOverMessage"></p>
+        <div id="gameOverScores" class="scores-list"></div>
+        <button id="playAgainBtn" class="btn-primary">Play Again</button>
+      </div>
+    </div>
+
+    <!-- Player hand -->
+    <div class="player-hand-area">
+      <div class="hand-info">
+        <span id="playerNameDisplay" class="player-name-tag">You</span>
+        <span id="handCount" class="hand-count">5 cards</span>
+        <button id="announceBtn" class="btn-announce hidden">📢 Announce</button>
+      </div>
+      <div id="playerHand" class="player-hand"></div>
+    </div>
+
+    <!-- Game log -->
+    <div id="gameLog" class="game-log">
+      <div class="log-toggle" id="logToggle">📜 Game Log</div>
+      <div class="log-entries" id="logEntries"></div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
