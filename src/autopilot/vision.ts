@@ -104,14 +104,25 @@ GAME ANALYSIS (only if screen is "game_playing"):
 
 CARD MATCHING RULES:
 - You can play a card if it matches the TOP CARD's SUIT or NUMBER
-- WHOT (20) can be played on anything — you then choose a suit
+- WHOT (wild card) can be played on ANY card regardless of suit or number. You declare which suit the next player must follow. The Whot card has NO number — it is just labeled "WHOT".
 
 SPECIAL CARDS (by number):
 - 1 = Hold On → Skip the next player's turn. In 2-player game, YOU play again.
 - 2 = Pick Two → Next player must draw 2 cards. BUT they can "plus" it by playing their own 2 on top — penalty passes on and accumulates (+2 each chain: 2→4→6→8 etc). If you can't plus it, you draw the full penalty.
 - 8 = Suspension → Next player is SUSPENDED. YOU get to play again immediately.
 - 14 = General Market → EVERY opponent draws 1 card from the market. YOU play again immediately.
-- 20 = Whot (Wild) → Can be played on ANY card regardless of suit or number. You declare which suit the next player must follow.
+
+CARD COUNTING — USE YOUR INTELLIGENCE:
+- Track which cards have been played on the discard pile throughout the game.
+- If you've seen many cards of a suit played already, the opponent is LESS likely to have that suit.
+- If few Pick Twos(2) have been played, the opponent may be holding one — be cautious.
+- If the market is running low, think about scoring: dump high-value cards and star cards NOW.
+- Count how many cards remain in the market — if it's getting low, switch strategy from "check up fast" to "keep lowest hand total".
+
+DUAL WIN STRATEGY — Always think about BOTH paths to victory:
+- PATH 1 (CHECK UP): Empty your hand as fast as possible. Play aggressively, chain extra turns.
+- PATH 2 (LOWEST SCORE): If the market is running low (<10 cards) or you have many cards, pivot to dumping high-value cards — especially Star(★) cards which count DOUBLE.
+- MAKE OPPONENT LOSE: Use Pick Two(2) to force them to draw, General Market(14) to inflate their hand, Suspension(8) to steal tempo. The goal is not just to win — it's to make them LOSE.
 
 WINNING CONDITIONS — TWO WAYS TO WIN:
 1. CHECK UP: Play your last card and you win immediately. ANY card can be your winning card — including Pick Two(2), Whot(20), or any special. The moment your hand is empty, you WIN.
@@ -124,7 +135,7 @@ CRITICAL STRATEGY RULES:
 - Pick Two(2) is both offensive AND defensive: use it to punish opponents, plus opponent's Pick Twos, or as your last card to check up.
 - When opponent has ≤2 cards they're close to winning — BLOCK THEM with Pick Two(2), Hold On(1), or Suspension(8).
 - Hold On(1) in a 2-player game = you play again (same effect as Suspension).
-- Save WHOT(20) for when you're stuck (no matching cards) or as a finisher when close to winning.
+- Save WHOT for when you're stuck (no matching cards) or as a finisher when close to winning.
 - Play cards of suits you have MANY of — this maintains your options for future turns.
 - Get rid of HIGH VALUE cards early, especially Star(★) cards which count DOUBLE if the market runs out.
 - When down to 2 cards, the app auto-announces "semi last card".
@@ -137,7 +148,7 @@ PRIORITY ORDER for card selection:
 4. High-value Star(★) cards → get rid of them early (they count double)
 5. Cards from your dominant suit → maintains future options
 6. Pick Two(2) → save for defense/offense unless needed now
-7. WHOT(20) → save for when stuck or close to winning
+7. WHOT → save for when stuck or close to winning
 
 ${context.strategyBrief || ''}
 
