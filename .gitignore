@@ -1,3 +1,5 @@
 node_modules/
 dist/
+tmp/
 .claude/settings.local.json
+.env
