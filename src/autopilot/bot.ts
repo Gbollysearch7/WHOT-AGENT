@@ -1,6 +1,7 @@
 import { captureFullScreen, focusApp, clickAt, sleep, ensureTmpDir } from './screen.js';
 import { analyzeScreenshot } from './analyzer.js';
 import { ScreenState, AnalysisResult } from './vision.js';
+import { GameLogger } from './logger.js';
 import { EventEmitter } from 'events';
 
 export interface BotConfig {
@@ -38,10 +39,13 @@ export class WhotBot extends EventEmitter {
   private frameCount: number = 0;
   private consecutiveUnknowns: number = 0;
   private lastClickTime: number = 0;
+  private logger: GameLogger;
+  private inGame: boolean = false;
 
   constructor(config: Partial<BotConfig> = {}) {
     super();
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.logger = new GameLogger();
     this.stats = {
       gamesPlayed: 0,
       wins: 0,
@@ -126,9 +130,11 @@ export class WhotBot extends EventEmitter {
     this.log('Analyzing screenshot...');
     let analysis: AnalysisResult;
     try {
+      const strategyBrief = this.logger.getStrategyBrief();
       analysis = await analyzeScreenshot(screenshotPath, {
         targetStake: this.config.targetStake,
         previousState: this.previousState,
+        strategyBrief: strategyBrief !== 'Not enough games played yet to generate strategy insights.' ? strategyBrief : undefined,
       });
     } catch (e: any) {
       this.log(`Analysis failed: ${e.message}`);
@@ -177,15 +183,27 @@ export class WhotBot extends EventEmitter {
       this.lastClickTime = Date.now();
     }
 
-    // Step 6: Track game state transitions
-    if (analysis.screen === 'game_playing' && analysis.gameState?.isMyTurn && analysis.clickTarget) {
-      this.stats.turnsTaken++;
+    // Step 6: Track game state transitions + logging
+    // Detect game start
+    if (analysis.screen === 'game_playing' && !this.inGame) {
+      this.inGame = true;
+      this.logger.startGame(this.config.targetStake);
+      this.log('=== NEW GAME STARTED — Logging enabled ===');
     }
 
-    if (analysis.screen === 'game_over') {
+    // Log each turn
+    if (analysis.screen === 'game_playing' && analysis.gameState?.isMyTurn && analysis.clickTarget) {
+      this.stats.turnsTaken++;
+      this.logger.logTurn(analysis);
+    }
+
+    // Detect game end
+    if (analysis.screen === 'game_over' && this.inGame) {
+      this.inGame = false;
       this.stats.gamesPlayed++;
-      // Determine win/loss from the analysis reasoning
-      if (analysis.reasoning.toLowerCase().includes('win') || analysis.reasoning.toLowerCase().includes('won')) {
+
+      const isWin = analysis.reasoning.toLowerCase().includes('win') || analysis.reasoning.toLowerCase().includes('won');
+      if (isWin) {
         this.stats.wins++;
         this.stats.totalEarnings += this.config.targetStake;
         this.log(`GAME WON! Total: ${this.stats.wins}W/${this.stats.losses}L | Earnings: ${this.stats.totalEarnings}`);
@@ -194,6 +212,10 @@ export class WhotBot extends EventEmitter {
         this.stats.totalEarnings -= this.config.targetStake;
         this.log(`GAME LOST. Total: ${this.stats.wins}W/${this.stats.losses}L | Earnings: ${this.stats.totalEarnings}`);
       }
+
+      this.logger.endGame(isWin ? 'win' : 'loss', analysis.gameState?.opponentCards || 0);
+      const brief = this.logger.getStrategyBrief();
+      this.log(`Strategy update: ${brief.split('\n')[0]}`);
       this.emit('game_over', this.stats);
     }
   }

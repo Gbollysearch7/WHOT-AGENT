@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { WhotBot } from './bot.js';
 import { createDashboard } from './dashboard.js';
 

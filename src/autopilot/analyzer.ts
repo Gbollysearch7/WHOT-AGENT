@@ -16,6 +16,7 @@ export async function analyzeScreenshot(
   context: {
     targetStake: number;
     previousState?: ScreenState;
+    strategyBrief?: string;
   }
 ): Promise<AnalysisResult> {
   const imageData = readFileSync(screenshotPath);

@@ -73,6 +73,7 @@ export interface AnalysisResult {
 export function buildAnalysisPrompt(context: {
   targetStake: number;
   previousState?: ScreenState;
+  strategyBrief?: string;
 }): string {
   return `You are an AI autopilot for the Whoto Whoto card game app. Analyze this screenshot and respond with ONLY valid JSON (no markdown, no backticks).
 
@@ -104,16 +105,26 @@ GAME ANALYSIS (only if screen is "game_playing"):
 CARD MATCHING RULES:
 - You can play a card if it matches the TOP CARD's SUIT or NUMBER
 - WHOT (20) can be played on anything — you then choose a suit
-- Special cards: 1=Hold On(skip), 2=Pick Two(chain), 8=Suspension(play again), 14=General Market(all draw 1, play again)
+- Special cards: 1=Hold On(skip next), 2=Pick Two(next draws 2 or chains), 8=Suspension(you play again), 14=General Market(all opponents draw 1, you play again)
+
+PICK TWO (2) RULES — VERY IMPORTANT:
+- When opponent plays a 2, you can REJECT it by playing your own 2 (the penalty passes to the next player, cumulative +2 each chain)
+- If you cannot chain a 2, you must draw the full accumulated penalty
+- A 2 can also be your LAST CARD to win — you can "check up" (win) with a Pick Two
+- So if you have a 2 and it's your last card, PLAY IT TO WIN even if it means the opponent would draw cards
 
 STRATEGY (when it's your turn):
-- If opponent has ≤2 cards: play Pick Two(2) or Hold On(1) to block them
-- Suspension(8) and General Market(14) give you extra turns — very valuable
+- If opponent has ≤2 cards: play Pick Two(2), Hold On(1), or Suspension(8) to block/delay them
+- Suspension(8) and General Market(14) give you extra turns — VERY valuable, prioritize these
 - Save WHOT(20) for when you're stuck or close to winning
-- Play cards of suits you have many of (maintain suit dominance)
-- Get rid of high-value cards early (star cards count DOUBLE in scoring)
+- Play cards of suits you have many of (maintain suit dominance — you'll have more options next turn)
+- Get rid of high-value cards early (star cards count DOUBLE in scoring if market runs out)
 - When down to 2 cards, the app auto-announces "semi last card"
 - When down to 1 card, the app auto-announces "last card"
+- If you have only 1 card left and can play it — ALWAYS play it to win (check up)
+- Hold On(1) in a 2-player game means YOU play again (same as suspension)
+
+${context.strategyBrief || ''}
 
 WHAT TO DO on each screen:
 - home: Click "PLAY" under Online Multiplayer
