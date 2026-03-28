@@ -105,24 +105,39 @@ GAME ANALYSIS (only if screen is "game_playing"):
 CARD MATCHING RULES:
 - You can play a card if it matches the TOP CARD's SUIT or NUMBER
 - WHOT (20) can be played on anything — you then choose a suit
-- Special cards: 1=Hold On(skip next), 2=Pick Two(next draws 2 or chains), 8=Suspension(you play again), 14=General Market(all opponents draw 1, you play again)
 
-PICK TWO (2) RULES — VERY IMPORTANT:
-- When opponent plays a 2, you can REJECT it by playing your own 2 (the penalty passes to the next player, cumulative +2 each chain)
-- If you cannot chain a 2, you must draw the full accumulated penalty
-- A 2 can also be your LAST CARD to win — you can "check up" (win) with a Pick Two
-- So if you have a 2 and it's your last card, PLAY IT TO WIN even if it means the opponent would draw cards
+SPECIAL CARDS (by number):
+- 1 = Hold On → Skip the next player's turn. In 2-player game, YOU play again.
+- 2 = Pick Two → Next player must draw 2 cards. BUT they can "plus" it by playing their own 2 on top — penalty passes on and accumulates (+2 each chain: 2→4→6→8 etc). If you can't plus it, you draw the full penalty.
+- 8 = Suspension → Next player is SUSPENDED. YOU get to play again immediately.
+- 14 = General Market → EVERY opponent draws 1 card from the market. YOU play again immediately.
+- 20 = Whot (Wild) → Can be played on ANY card regardless of suit or number. You declare which suit the next player must follow.
 
-STRATEGY (when it's your turn):
-- If opponent has ≤2 cards: play Pick Two(2), Hold On(1), or Suspension(8) to block/delay them
-- Suspension(8) and General Market(14) give you extra turns — VERY valuable, prioritize these
-- Save WHOT(20) for when you're stuck or close to winning
-- Play cards of suits you have many of (maintain suit dominance — you'll have more options next turn)
-- Get rid of high-value cards early (star cards count DOUBLE in scoring if market runs out)
-- When down to 2 cards, the app auto-announces "semi last card"
-- When down to 1 card, the app auto-announces "last card"
-- If you have only 1 card left and can play it — ALWAYS play it to win (check up)
-- Hold On(1) in a 2-player game means YOU play again (same as suspension)
+WINNING CONDITIONS — TWO WAYS TO WIN:
+1. CHECK UP: Play your last card and you win immediately. ANY card can be your winning card — including Pick Two(2), Whot(20), or any special. The moment your hand is empty, you WIN.
+2. MARKET EXHAUSTED: When the draw pile runs out, all players count the face values of their remaining cards. Star(★) cards count DOUBLE their face value. The player with the LOWEST total score wins.
+
+CRITICAL STRATEGY RULES:
+- Your #1 goal is to EMPTY YOUR HAND as fast as possible (check up)
+- If you have 1 card left and can play it — ALWAYS PLAY IT. That's an instant win.
+- Suspension(8) and General Market(14) give you EXTRA TURNS — these are your most powerful cards. Play them to chain multiple plays in a row.
+- Pick Two(2) is both offensive AND defensive: use it to punish opponents, plus opponent's Pick Twos, or as your last card to check up.
+- When opponent has ≤2 cards they're close to winning — BLOCK THEM with Pick Two(2), Hold On(1), or Suspension(8).
+- Hold On(1) in a 2-player game = you play again (same effect as Suspension).
+- Save WHOT(20) for when you're stuck (no matching cards) or as a finisher when close to winning.
+- Play cards of suits you have MANY of — this maintains your options for future turns.
+- Get rid of HIGH VALUE cards early, especially Star(★) cards which count DOUBLE if the market runs out.
+- When down to 2 cards, the app auto-announces "semi last card".
+- When down to 1 card, the app auto-announces "last card".
+
+PRIORITY ORDER for card selection:
+1. If it's your LAST card and it's playable → PLAY IT (instant win / check up)
+2. If opponent has 1-2 cards → play blocking cards (Pick Two, Hold On, Suspension)
+3. Suspension(8) or General Market(14) → extra turn is always valuable
+4. High-value Star(★) cards → get rid of them early (they count double)
+5. Cards from your dominant suit → maintains future options
+6. Pick Two(2) → save for defense/offense unless needed now
+7. WHOT(20) → save for when stuck or close to winning
 
 ${context.strategyBrief || ''}
 
