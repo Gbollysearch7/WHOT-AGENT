@@ -3,6 +3,7 @@ import { analyzeScreenshot } from './analyzer.js';
 import { ScreenState, AnalysisResult } from './vision.js';
 import { GameLogger } from './logger.js';
 import { EventEmitter } from 'events';
+import { execSync } from 'child_process';
 
 export interface BotConfig {
   targetStake: number;
@@ -38,6 +39,7 @@ export class WhotBot extends EventEmitter {
   private previousState: ScreenState = 'unknown';
   private frameCount: number = 0;
   private consecutiveUnknowns: number = 0;
+  private consecutiveWaiting: number = 0;
   private lastClickTime: number = 0;
   private logger: GameLogger;
   private inGame: boolean = false;
@@ -99,8 +101,9 @@ export class WhotBot extends EventEmitter {
         this.emit('error', error);
       }
 
-      // Wait before next capture
-      await sleep(this.config.captureIntervalMs);
+      // Wait before next capture — faster polling during waiting/confirm states
+      const isUrgent = this.previousState === 'waiting' || this.previousState === 'game_confirm' || this.previousState === 'join_confirm';
+      await sleep(isUrgent ? 1000 : this.config.captureIntervalMs);
     }
   }
 
@@ -117,7 +120,7 @@ export class WhotBot extends EventEmitter {
 
     // Step 1: Focus app and capture screen
     try { focusApp(); } catch {}
-    await sleep(300);
+    await sleep(200);
 
     this.log(`Capturing screen (frame ${this.frameCount})...`);
     let screenshotPath: string;
@@ -129,7 +132,23 @@ export class WhotBot extends EventEmitter {
       return;
     }
 
-    // Step 2: Analyze with Claude Vision
+    // Step 1.5: FAST-PATH — Instant click for confirmation dialogs
+    // Don't waste time on API calls for "YES, CONTINUE" buttons
+    // These screens have known button positions — just click immediately
+    const fastAction = await this.checkFastPath(screenshotPath);
+    if (fastAction) {
+      this.log(`FAST-PATH: ${fastAction.reason}`);
+      await sleep(200);
+      clickAt(fastAction.x, fastAction.y);
+      this.log(`Instant click at (${fastAction.x}, ${fastAction.y})`);
+      this.previousState = fastAction.state;
+      this.stats.currentState = fastAction.state;
+      this.stats.lastAction = fastAction.reason;
+      this.emit('analysis', { screen: fastAction.state, action: fastAction.reason, reasoning: 'Fast-path instant click' });
+      return;
+    }
+
+    // Step 2: Analyze with Claude Vision (only for complex screens)
     this.log('Analyzing screenshot...');
     let analysis: AnalysisResult;
     try {
@@ -256,6 +275,85 @@ export class WhotBot extends EventEmitter {
     } catch (e: any) {
       this.log(`Click failed: ${e.message}`);
     }
+  }
+
+  private async checkFastPath(screenshotPath: string): Promise<{
+    x: number; y: number; reason: string; state: ScreenState;
+  } | null> {
+    const IMAGE_WIDTH = 1200;
+    const SCREEN_LOGICAL_WIDTH = 1512;
+    const scale = SCREEN_LOGICAL_WIDTH / IMAGE_WIDTH;
+
+    try {
+      // Use Python to sample a pixel at the "YES, CONTINUE" button location
+      // The dark red button has a distinctive color (~rgb(120,25,28) or similar dark red)
+      // Check two positions: join_confirm button and game_confirm button
+
+      // Sample pixel at center of where "YES, CONTINUE" button would be
+      // In the 1200px image, the button is at approximately (600, 444) for game_confirm
+      // and (600, 460) for join_confirm
+      // "YES, CONTINUE" dark red button is at y=500-520 in the 1200px image
+      // Also check the join_confirm dialog which has a similar button around y=510
+      const checkPoints = [
+        { imgX: 600, imgY: 510, state: 'game_confirm' as ScreenState, label: 'Game confirm YES' },
+        { imgX: 600, imgY: 505, state: 'join_confirm' as ScreenState, label: 'Join lobby YES' },
+        { imgX: 600, imgY: 500, state: 'game_confirm' as ScreenState, label: 'Confirm YES (alt)' },
+      ];
+
+      for (const point of checkPoints) {
+        // Use sips to extract pixel color at position
+        const result = execSync(
+          `python3 -c "
+from PIL import Image
+img = Image.open('${screenshotPath}')
+px = img.getpixel((${point.imgX}, ${point.imgY}))
+print(f'{px[0]},{px[1]},{px[2]}')
+" 2>/dev/null`,
+          { encoding: 'utf-8' }
+        ).trim();
+
+        if (result) {
+          const [r, g, b] = result.split(',').map(Number);
+          // Dark red button: R > 100, G < 50, B < 50
+          if (r > 90 && g < 50 && b < 50) {
+            const btnX = Math.round(point.imgX * scale);
+            const btnY = Math.round(point.imgY * scale);
+            return {
+              x: btnX,
+              y: btnY,
+              reason: `INSTANT: ${point.label} — dark red button detected, clicking immediately`,
+              state: point.state,
+            };
+          }
+        }
+      }
+    } catch {
+      // PIL not available or error — fall through to normal analysis
+    }
+
+    // Fallback: if previous state was waiting, the next change is almost certainly game_confirm
+    // Use state-based fast path
+    if (this.previousState === 'waiting' && this.consecutiveWaiting >= 3) {
+      // We've been waiting for a while, now something changed — probably the confirm dialog
+      const btnX = Math.round(600 * scale);
+      const btnY = Math.round(444 * scale);
+      this.consecutiveWaiting = 0;
+      return {
+        x: btnX,
+        y: btnY,
+        reason: 'INSTANT: Was waiting, screen changed — clicking YES CONTINUE',
+        state: 'game_confirm',
+      };
+    }
+
+    // Track consecutive waiting states
+    if (this.previousState === 'waiting') {
+      this.consecutiveWaiting++;
+    } else {
+      this.consecutiveWaiting = 0;
+    }
+
+    return null;
   }
 
   private log(message: string): void {
