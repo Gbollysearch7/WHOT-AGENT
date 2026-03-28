@@ -1,4 +1,4 @@
-import { captureFullScreen, focusApp, clickAt, sleep, ensureTmpDir } from './screen.js';
+import { captureFullScreen, focusApp, clickAt, scrollDown, sleep, ensureTmpDir } from './screen.js';
 import { analyzeScreenshot } from './analyzer.js';
 import { ScreenState, AnalysisResult } from './vision.js';
 import { GameLogger } from './logger.js';
@@ -115,7 +115,10 @@ export class WhotBot extends EventEmitter {
     this.frameCount++;
     const screenshotFile = `frame_${this.frameCount % 10}.png`;
 
-    // Step 1: Capture screen
+    // Step 1: Focus app and capture screen
+    try { focusApp(); } catch {}
+    await sleep(300);
+
     this.log(`Capturing screen (frame ${this.frameCount})...`);
     let screenshotPath: string;
     try {
@@ -170,7 +173,15 @@ export class WhotBot extends EventEmitter {
     }
     this.consecutiveUnknowns = 0;
 
-    // Step 5: Execute action (click)
+    // Step 5: Handle scroll if needed
+    if (analysis.scrollNeeded) {
+      this.log('Scrolling down in lobby...');
+      scrollDown(600, 400, 5);
+      await sleep(500);
+      return; // Re-capture after scroll
+    }
+
+    // Step 6: Execute action (click)
     if (analysis.clickTarget) {
       // Rate limit clicks — don't click faster than every 2 seconds
       const now = Date.now();
@@ -223,8 +234,18 @@ export class WhotBot extends EventEmitter {
   private async executeClick(analysis: AnalysisResult): Promise<void> {
     if (!analysis.clickTarget) return;
 
-    const { x, y } = analysis.clickTarget;
-    this.log(`Clicking at (${x}, ${y})`);
+    // Claude sees a 1200px-wide image, but screen is Retina (3024px capture → 1512pt logical)
+    // Scale coordinates from image space (1200px) to logical screen space (1512pt)
+    const IMAGE_WIDTH = 1200;
+    const SCREEN_LOGICAL_WIDTH = 1512; // 3024 retina / 2
+    const scale = SCREEN_LOGICAL_WIDTH / IMAGE_WIDTH; // ~1.26
+
+    const rawX = analysis.clickTarget.x;
+    const rawY = analysis.clickTarget.y;
+    const x = Math.round(rawX * scale);
+    const y = Math.round(rawY * scale);
+
+    this.log(`Click: image(${rawX},${rawY}) → screen(${x},${y}) [scale ${scale.toFixed(2)}]`);
 
     // Small delay before clicking for reliability
     await sleep(this.config.clickDelayMs);

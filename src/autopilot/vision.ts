@@ -57,6 +57,7 @@ export interface ButtonInfo {
 export interface AnalysisResult {
   screen: ScreenState;
   action: string;
+  scrollNeeded?: boolean;
   clickTarget?: { x: number; y: number };
   cardToPlay?: number; // index of card in hand to play
   suitToCall?: Suit;
@@ -102,9 +103,20 @@ GAME ANALYSIS (only if screen is "game_playing"):
 4. Count opponent's cards (shown next to their avatar).
 5. Read market/draw pile count (shown below the face-down pile).
 
-CARD MATCHING RULES:
-- You can play a card if it matches the TOP CARD's SUIT or NUMBER
-- WHOT (wild card) can be played on ANY card regardless of suit or number. You declare which suit the next player must follow. The Whot card has NO number — it is just labeled "WHOT".
+CARD MATCHING RULES — CRITICAL, NEVER VIOLATE:
+A card can ONLY be played if ONE of these is true:
+  1. The card's SUIT matches the top card's SUIT (e.g. circle on circle, triangle on triangle)
+  2. The card's NUMBER matches the top card's NUMBER (e.g. any 5 on any 5, any 14 on any 14)
+  3. The card is a WHOT wild card (can be played on anything)
+
+BEFORE selecting a card, you MUST verify the match:
+  - Read the top card's suit AND number
+  - For each card in your hand, check: does my card's suit match OR does my card's number match?
+  - ONLY play cards that pass this check
+  - If NO card matches, you MUST draw from the market (set cardToPlay to -1)
+  - NEVER play a card that doesn't match — this is an illegal move and will waste your turn
+
+WHOT (wild card) can be played on ANY card regardless of suit or number. You declare which suit the next player must follow. The Whot card has NO number — it is just labeled "WHOT".
 
 SPECIAL CARDS (by number):
 - 1 = Hold On → Skip the next player's turn. In 2-player game, YOU play again.
@@ -155,10 +167,11 @@ ${context.strategyBrief || ''}
 WHAT TO DO on each screen:
 - home: Click "PLAY" under Online Multiplayer
 - multiplayer_menu: Click first "PLAY" button (top banner)
-- lobby: Find the room matching target stake ${context.targetStake}, click its "JOIN ROOM" button
-- join_confirm: Click "YES, CONTINUE"
+- lobby: Find the room matching target stake ${context.targetStake}. The rooms from top to bottom are: Millionaire's Club(25000), Big Cake(10000), New Takers(5000), 2K Wahala(2000), Face to Face(1000). If the target room's "JOIN ROOM" button is not visible, set "scrollNeeded": true in your response so we scroll down first. If "JOIN ROOM" button IS visible, click it.
+- join_confirm: Click "YES, CONTINUE" (the dark red button at the bottom)
 - waiting: Do nothing, wait
-- game_confirm: Click "YES, CONTINUE"
+- game_confirm: Click "YES, CONTINUE" (the dark red button at the bottom)
+- starting: Do nothing, wait
 - starting: Do nothing, wait
 - game_playing + my turn: Pick the best card to play. If no valid card, click the market/draw pile.
 - game_playing + not my turn: Do nothing, wait
@@ -169,16 +182,18 @@ RESPONSE FORMAT (strict JSON only):
 {
   "screen": "<screen state>",
   "action": "<description of what to do>",
+  "scrollNeeded": false,
   "clickTarget": {"x": <pixel_x>, "y": <pixel_y>},
   "cardToPlay": <index 0-based from left of card to play, or -1 for draw, or null if not game>,
   "suitToCall": "<suit or null>",
-  "reasoning": "<brief explanation>",
+  "reasoning": "<MUST include: Top card is [suit] [number]. Valid cards in my hand: [list each card that matches by suit OR number]. I choose [card] because [reason].>",
   "gameState": {
     "myCards": ["triangle 1", "circle 10", ...],
     "topCard": "circle 11",
     "isMyTurn": true/false,
     "opponentCards": 4,
-    "marketCards": 38
+    "marketCards": 38,
+    "validCards": ["circle 10", "triangle 11"]
   }
 }`;
 }
