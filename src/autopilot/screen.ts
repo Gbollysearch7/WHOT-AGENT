@@ -56,8 +56,8 @@ export function captureAppWindow(filename: string = 'screen.png'): { path: strin
 
 function compressImage(filepath: string): void {
   try {
-    // Resize to max 1000px wide — keeps under API limit and still readable
-    execSync(`sips --resampleWidth 1000 "${filepath}" 2>/dev/null`, { encoding: 'utf-8' });
+    // Resize to 1400px wide — bigger = better card number reading
+    execSync(`sips --resampleWidth 1400 "${filepath}" 2>/dev/null`, { encoding: 'utf-8' });
     const stats = statSync(filepath);
     if (stats.size > MAX_IMAGE_BYTES) {
       const jpgPath = filepath.replace('.png', '.jpg');

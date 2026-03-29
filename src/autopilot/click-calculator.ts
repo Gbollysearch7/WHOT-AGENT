@@ -86,9 +86,9 @@ export function getButtonClickPosition(
       imgY = imageHeight * 0.82;
       break;
     case 'yes_continue':
-      // Dark red "YES, CONTINUE" button — roughly 50% across, 67% down in dialog
+      // Dark red "YES, CONTINUE" button — roughly 50% across, 62% down
       imgX = imageWidth * 0.50;
-      imgY = imageHeight * 0.67;
+      imgY = imageHeight * 0.62;
       break;
     default:
       imgX = imageWidth * 0.50;

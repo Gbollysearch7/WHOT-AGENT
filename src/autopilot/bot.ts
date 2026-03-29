@@ -260,9 +260,10 @@ export class WhotBot extends EventEmitter {
     try {
       // Sample pixel at known "YES, CONTINUE" button positions
       const checkY = [
-        Math.round(this.imageHeight * 0.66),
-        Math.round(this.imageHeight * 0.68),
-        Math.round(this.imageHeight * 0.70),
+        Math.round(this.imageHeight * 0.59),
+        Math.round(this.imageHeight * 0.61),
+        Math.round(this.imageHeight * 0.63),
+        Math.round(this.imageHeight * 0.65),
       ];
       const checkX = Math.round(this.imageWidth / 2);
 
