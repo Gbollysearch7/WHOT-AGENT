@@ -1,6 +1,8 @@
 import { writeFileSync, readFileSync, existsSync, appendFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { AnalysisResult } from './vision.js';
+import { ScreenState } from './vision.js';
+import { Decision } from './decision-engine.js';
+import { cardDisplay, ParsedCard } from './card-normalizer.js';
 
 const LOGS_DIR = join(process.cwd(), 'logs');
 const GAME_LOG_FILE = join(LOGS_DIR, 'games.jsonl');
@@ -98,51 +100,51 @@ export class GameLogger {
     return gameId;
   }
 
-  logTurn(analysis: AnalysisResult): void {
+  logTurn(decision: Decision, myCards: ParsedCard[], topCard: ParsedCard | null, opponentCards: number, marketCards: number): void {
     if (!this.currentGame) return;
     this.turnCounter++;
 
-    const gs = analysis.gameState;
-    const cardPlayed = analysis.cardToPlay !== null && analysis.cardToPlay !== undefined && analysis.cardToPlay >= 0
-      ? gs?.myCards?.[analysis.cardToPlay] || null
-      : null;
+    const cardPlayed = decision.card ? cardDisplay(decision.card) : null;
 
     // Track specials
-    if (cardPlayed) {
-      const num = cardPlayed.match(/\d+/)?.[0];
-      if (num && ['1', '2', '8', '14', '20'].includes(num)) {
-        this.specialsPlayed.push(cardPlayed);
+    if (decision.card && decision.card.number) {
+      const num = decision.card.number;
+      if ([1, 2, 8, 14].includes(num)) {
+        this.specialsPlayed.push(cardPlayed || `special_${num}`);
       }
+    }
+    if (decision.card?.suit === 'whot') {
+      this.specialsPlayed.push('WHOT');
     }
 
     // Track draws
-    if (analysis.action?.toLowerCase().includes('draw') || analysis.cardToPlay === -1) {
+    if (decision.action === 'draw') {
       this.cardsDrawnCount++;
     }
 
     // Identify key moments
-    if (gs?.myCards && gs.myCards.length <= 2) {
-      this.keyMoments.push(`Turn ${this.turnCounter}: Down to ${gs.myCards.length} cards`);
+    if (myCards.length <= 2) {
+      this.keyMoments.push(`Turn ${this.turnCounter}: Down to ${myCards.length} cards`);
     }
-    if (gs?.opponentCards && gs.opponentCards <= 2) {
-      this.keyMoments.push(`Turn ${this.turnCounter}: Opponent down to ${gs.opponentCards} cards`);
+    if (opponentCards <= 2) {
+      this.keyMoments.push(`Turn ${this.turnCounter}: Opponent down to ${opponentCards} cards`);
     }
-    if (cardPlayed?.includes('20')) {
-      this.keyMoments.push(`Turn ${this.turnCounter}: Played WHOT, called ${analysis.suitToCall}`);
+    if (decision.card?.suit === 'whot') {
+      this.keyMoments.push(`Turn ${this.turnCounter}: Played WHOT, called ${decision.suitToCall}`);
     }
 
     const turn: TurnLog = {
       timestamp: new Date().toISOString(),
       gameId: this.currentGame.gameId!,
       turnNumber: this.turnCounter,
-      screen: analysis.screen,
-      myCards: gs?.myCards || [],
-      topCard: gs?.topCard || '',
+      screen: 'game_playing',
+      myCards: myCards.map(c => cardDisplay(c)),
+      topCard: topCard ? cardDisplay(topCard) : '',
       cardPlayed,
-      action: analysis.action,
-      reasoning: analysis.reasoning,
-      opponentCards: gs?.opponentCards || 0,
-      marketCards: gs?.marketCards || 0,
+      action: decision.action,
+      reasoning: decision.reasoning,
+      opponentCards,
+      marketCards,
       wasSuccessful: true,
     };
 
