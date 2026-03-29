@@ -28,10 +28,10 @@ export interface BotStats {
 }
 
 const DEFAULT_CONFIG: BotConfig = {
-  targetStake: 1000,
+  targetStake: 0, // Fresher's Room (free)
   autoReplay: true,
-  captureIntervalMs: 3000,
-  clickDelayMs: 300,
+  captureIntervalMs: 1500,
+  clickDelayMs: 100,
 };
 
 export class WhotBot extends EventEmitter {
@@ -45,6 +45,8 @@ export class WhotBot extends EventEmitter {
   private logger: GameLogger;
   private stateTracker: StateTracker;
   private inGame: boolean = false;
+  private lastPlayedSpecial: boolean = false;
+  private hasScrolledLobby: boolean = false;
   private windowBounds: WindowBounds | null = null;
   private imageWidth: number = 1000;
   private imageHeight: number = 780;
@@ -95,8 +97,11 @@ export class WhotBot extends EventEmitter {
         this.emit('error', error);
       }
 
+      // Speed: fastest possible — play like a human who knows what they're doing
       const isUrgent = this.previousState === 'waiting' || this.previousState === 'game_confirm' || this.previousState === 'join_confirm';
-      await sleep(isUrgent ? 1000 : this.config.captureIntervalMs);
+      const justPlayedSpecial = this.lastPlayedSpecial;
+      this.lastPlayedSpecial = false;
+      await sleep(justPlayedSpecial ? 800 : isUrgent ? 700 : this.config.captureIntervalMs);
     }
   }
 
@@ -113,7 +118,7 @@ export class WhotBot extends EventEmitter {
 
     // Focus app
     try { focusApp(); } catch {}
-    await sleep(200);
+    await sleep(100);
 
     // Capture ONLY the app window
     this.log(`Frame ${this.frameCount}...`);
@@ -196,12 +201,24 @@ export class WhotBot extends EventEmitter {
     }
     this.consecutiveUnknowns = 0;
 
-    // Handle scroll
-    if (result.vision.scrollNeeded) {
-      this.log('Scrolling down in lobby...');
-      scrollDown(600, 400, 5);
-      await sleep(500);
-      return;
+    // Handle scroll — Fresher's Room (stake=0) ALWAYS needs scroll since it's at the bottom
+    if (result.vision.scrollNeeded || (result.screen === 'lobby' && this.config.targetStake === 0)) {
+      if (!this.hasScrolledLobby) {
+        this.log('Scrolling down to find Fresher\'s Room...');
+        // Use actual screen coordinates for the swipe
+        const cx = this.windowBounds ? this.windowBounds.x + this.windowBounds.width / 2 : 428;
+        const cy = this.windowBounds ? this.windowBounds.y + this.windowBounds.height / 2 : 466;
+        scrollDown(cx, cy, 400);
+        await sleep(1000);
+        this.hasScrolledLobby = true;
+        return;
+      }
+      // Already scrolled — the click should work now, don't scroll again
+    }
+
+    // Reset lobby scroll flag when we leave lobby (so it scrolls again next time)
+    if (result.screen !== 'lobby') {
+      this.hasScrolledLobby = false;
     }
 
     // Detect game start
@@ -233,10 +250,19 @@ export class WhotBot extends EventEmitter {
       this.emit('game_over', this.stats);
     }
 
+    // Track if we played a special card (1, 8, 14 = extra turn, play again immediately)
+    if (result.decision?.card) {
+      const num = result.decision.card.number;
+      if (num === 1 || num === 8 || num === 14) {
+        this.lastPlayedSpecial = true;
+        this.log(`SPECIAL PLAYED (${num}) → will play again immediately!`);
+      }
+    }
+
     // Execute click
     if (result.click) {
       const now = Date.now();
-      if (now - this.lastClickTime < 1500) {
+      if (now - this.lastClickTime < 600) {
         this.log('Click rate limited');
         return;
       }

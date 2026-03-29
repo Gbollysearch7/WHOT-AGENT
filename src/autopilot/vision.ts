@@ -36,7 +36,7 @@ export function buildReadOnlyPrompt(targetStake: number): string {
 SCREEN TYPES — identify which one this is:
 - "home": Main menu with "Online Multiplayer", "Play vs Friends", "Play with AI"
 - "multiplayer_menu": Sub-menu with 3 play mode banners with PLAY buttons
-- "lobby": Room list with stake rooms (Millionaire's Club 25000, Big Cake 10000, New Takers 5000, 2K Wahala 2000, Face to Face 1000). Each has a JOIN ROOM button.
+- "lobby": Room list with stake rooms (Millionaire's Club 25000, Big Cake 10000, New Takers 5000, 2K Wahala 2000, Face to Face 1000, Fresher's Room free). Each has a JOIN ROOM button.
 - "join_confirm": Dialog asking "Join Lobby?" or "Are you sure" with NO and YES,CONTINUE buttons
 - "waiting": "Waiting for other players..." with timer and Leave Lobby button
 - "game_confirm": Dialog "Continue? Are you sure you want to proceed" with NO and YES,CONTINUE buttons
@@ -65,7 +65,7 @@ IF SCREEN IS "game_playing", read these carefully:
 6. REQUIRED SUIT: If a suit icon is highlighted or required (after WHOT was played), note which suit.
 
 IF SCREEN IS "lobby":
-- Check if the ${targetStake} room's JOIN ROOM button is visible on screen
+- Check if the ${targetStake === 0 ? "Fresher's Room (free)" : targetStake + ' coin'} room's JOIN ROOM button is visible on screen. If not visible, set scrollNeeded to true.
 - If not visible (need to scroll), set scrollNeeded: true
 
 RESPONSE — strict JSON only, no markdown:

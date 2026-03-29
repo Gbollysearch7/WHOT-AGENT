@@ -9,6 +9,9 @@
     "dev": "tsx watch src/server/index.ts",
     "bot": "tsx src/autopilot/index.ts",
     "bot:auto": "tsx src/autopilot/index.ts --auto",
+    "bot:train": "tsx src/autopilot/index.ts --stake=0 --auto",
+    "bot:1k": "tsx src/autopilot/index.ts --stake=1000 --auto",
+    "bot:2k": "tsx src/autopilot/index.ts --stake=2000 --auto",
     "bot:5k": "tsx src/autopilot/index.ts --stake=5000 --auto",
     "bot:10k": "tsx src/autopilot/index.ts --stake=10000 --auto"
   },

@@ -1,30 +1,48 @@
 {
-  "totalGames": 1,
+  "totalGames": 5,
   "wins": 1,
-  "losses": 0,
-  "winRate": 100,
-  "totalEarnings": 1000,
-  "totalTurns": 12,
-  "avgTurnsPerGame": 12,
+  "losses": 4,
+  "winRate": 20,
+  "totalEarnings": -1000,
+  "totalTurns": 88,
+  "avgTurnsPerGame": 18,
   "bestStreak": 1,
-  "currentStreak": 1,
+  "currentStreak": -4,
   "stakeBreakdown": {
+    "0": {
+      "games": 2,
+      "wins": 0,
+      "losses": 2,
+      "earnings": 0
+    },
     "1000": {
-      "games": 1,
+      "games": 3,
       "wins": 1,
-      "losses": 0,
-      "earnings": 1000
+      "losses": 2,
+      "earnings": -1000
     }
   },
   "cardPlayFrequency": {},
   "specialCardEffectiveness": {
     "hold_on": {
-      "played": 9,
+      "played": 16,
       "ledToWin": 9
+    },
+    "general_market": {
+      "played": 26,
+      "ledToWin": 0
+    },
+    "pick_two": {
+      "played": 5,
+      "ledToWin": 0
+    },
+    "suspension": {
+      "played": 7,
+      "ledToWin": 0
     }
   },
   "suitCallFrequency": {},
   "commonMistakes": [],
   "learnedPatterns": [],
-  "lastUpdated": "2026-03-28T18:24:56.426Z"
+  "lastUpdated": "2026-03-29T14:23:13.779Z"
 }

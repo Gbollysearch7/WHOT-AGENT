@@ -47,7 +47,7 @@ export function getMarketClickPosition(
 
 // Button positions for lobby/menu screens
 export function getButtonClickPosition(
-  buttonType: 'play_multiplayer' | 'play_first_mode' | 'join_room_1000' | 'join_room_2000' |
+  buttonType: 'play_multiplayer' | 'play_first_mode' | 'join_room_free' | 'join_room_1000' | 'join_room_2000' |
     'join_room_5000' | 'join_room_10000' | 'join_room_25000' | 'yes_continue' | 'scroll_target',
   imageWidth: number,
   imageHeight: number,
@@ -84,6 +84,11 @@ export function getButtonClickPosition(
     case 'join_room_1000':
       imgX = imageWidth * 0.50;
       imgY = imageHeight * 0.82;
+      break;
+    case 'join_room_free':
+      // Fresher's Room is at the very bottom after scrolling
+      imgX = imageWidth * 0.50;
+      imgY = imageHeight * 0.955;
       break;
     case 'yes_continue':
       // Dark red "YES, CONTINUE" button — roughly 50% across, 62% down

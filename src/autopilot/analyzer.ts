@@ -104,8 +104,8 @@ export async function analyzePipeline(
       if (vision.scrollNeeded) {
         return result; // Bot will handle scrolling
       }
-      const stakeKey = `join_room_${targetStake}` as any;
-      result.click = getButtonClickPosition(stakeKey, imageWidth, imageHeight, bounds);
+      const stakeKey = targetStake === 0 ? 'join_room_free' : `join_room_${targetStake}`;
+      result.click = getButtonClickPosition(stakeKey as any, imageWidth, imageHeight, bounds);
       return result;
     }
 

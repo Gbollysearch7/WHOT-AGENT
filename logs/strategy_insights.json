@@ -1,16 +1,23 @@
 [
   {
     "pattern": "late_game_specials",
-    "confidence": 0.7,
-    "evidence": "Played 4 specials in last 40% of game → win",
-    "gamesObserved": 1,
-    "lastSeen": "2026-03-28T18:24:56.428Z"
+    "confidence": 0.4,
+    "evidence": "Played 4 specials in last 40% of game → loss",
+    "gamesObserved": 4,
+    "lastSeen": "2026-03-29T14:23:13.781Z"
   },
   {
     "pattern": "low_draw_rate",
-    "confidence": 0.6,
-    "evidence": "Draw ratio 0.00 (drew 0, played 12) → win",
-    "gamesObserved": 1,
-    "lastSeen": "2026-03-28T18:24:56.428Z"
+    "confidence": 0.43999999999999995,
+    "evidence": "Draw ratio 0.00 (drew 0, played 14) → loss",
+    "gamesObserved": 5,
+    "lastSeen": "2026-03-29T14:23:13.781Z"
+  },
+  {
+    "pattern": "pick_two_aggression",
+    "confidence": 0.2,
+    "evidence": "Played 3 Pick Twos in one game → loss",
+    "gamesObserved": 2,
+    "lastSeen": "2026-03-29T14:23:13.781Z"
   }
 ]

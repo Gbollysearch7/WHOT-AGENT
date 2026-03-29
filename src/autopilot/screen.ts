@@ -96,12 +96,27 @@ export function clickAt(x: number, y: number): void {
   execSync(`osascript -e 'tell application "System Events" to click at {${Math.round(x)}, ${Math.round(y)}}'`);
 }
 
-export function scrollDown(x: number, y: number, amount: number = 5): void {
-  for (let i = 0; i < amount; i++) {
-    try {
-      execSync(`osascript -e 'tell application "System Events" to key code 125'`);
-    } catch {}
-  }
+export function scrollDown(screenX: number, screenY: number, distance: number = 400): void {
+  // Use Quartz CGEvent swipe gesture — works on iOS apps running on Mac
+  const startY = screenY + distance / 2;
+  const endY = screenY - distance / 2;
+  try {
+    execSync(`python3 -c "
+import Quartz, time
+sx, sy = ${screenX}, ${Math.round(startY)}
+ex, ey = ${screenX}, ${Math.round(endY)}
+e = Quartz.CGEventCreateMouseEvent(None, Quartz.kCGEventLeftMouseDown, (sx, sy), Quartz.kCGMouseButtonLeft)
+Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
+time.sleep(0.03)
+for i in range(20):
+    y = sy - (sy - ey) * (i / 20)
+    e = Quartz.CGEventCreateMouseEvent(None, Quartz.kCGEventLeftMouseDragged, (sx, y), Quartz.kCGMouseButtonLeft)
+    Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
+    time.sleep(0.015)
+e = Quartz.CGEventCreateMouseEvent(None, Quartz.kCGEventLeftMouseUp, (ex, ey), Quartz.kCGMouseButtonLeft)
+Quartz.CGEventPost(Quartz.kCGHIDEventTap, e)
+"`, { encoding: 'utf-8' });
+  } catch {}
 }
 
 export function sleep(ms: number): Promise<void> {
